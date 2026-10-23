@@ -1,0 +1,384 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#090b12">
+<title>LinkDrop — Video Downloader</title>
+<meta name="description" content="A simple tool for downloading videos from direct, publicly accessible video links.">
+<style>
+:root {
+  color-scheme: dark;
+  --bg: #090b12;
+  --panel: #111521;
+  --line: #252c3d;
+  --text: #f5f7ff;
+  --muted: #9aa5bb;
+  --accent: #a99aff;
+  --accent2: #6f5bff;
+  --good: #83e2b0;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  min-height: 100vh;
+  background:
+    radial-gradient(ellipse at 50% 0%, #29204e 0, transparent 48%),
+    var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, sans-serif;
+}
+button, input { font: inherit; }
+button { cursor: pointer; }
+.wrap { width: min(920px, 100% - 36px); margin: auto; }
+header {
+  height: 76px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #ffffff0d;
+}
+.brand { display: flex; align-items: center; gap: 10px; font-weight: 750; font-size: 20px; letter-spacing: -.6px; }
+.logo {
+  width: 38px; height: 38px; border-radius: 12px;
+  display: grid; place-items: center;
+  color: white; font-size: 21px;
+  background: linear-gradient(140deg, #b5a5ff, #7156f5);
+  box-shadow: 0 5px 24px #8066ff40;
+}
+.pill {
+  font-size: 12px; color: var(--good);
+  border: 1px solid #83e2b033; border-radius: 999px;
+  padding: 7px 10px; background: #83e2b00b;
+}
+main { padding: 70px 0 50px; }
+.eyebrow {
+  color: var(--accent); text-transform: uppercase;
+  font-size: 11px; font-weight: 750; letter-spacing: 2px;
+}
+h1 {
+  font-size: clamp(38px, 8vw, 66px);
+  line-height: 1.06; letter-spacing: -2.8px;
+  margin: 17px 0;
+}
+h1 span {
+  background: linear-gradient(90deg, #c4b9ff, #8a76ff);
+  background-clip: text; -webkit-background-clip: text;
+  color: transparent;
+}
+.intro {
+  color: var(--muted); max-width: 530px;
+  line-height: 1.75; font-size: 15px; margin: 0 auto;
+}
+.center { text-align: center; }
+.downloader {
+  max-width: 680px; margin: 36px auto 0;
+  border: 1px solid #ffffff16; border-radius: 22px;
+  padding: 22px; background: #111521df;
+  box-shadow: 0 24px 80px #0005;
+}
+.label { display: block; font-size: 13px; margin-bottom: 12px; font-weight: 650; }
+.inputrow {
+  display: flex; align-items: center; gap: 8px;
+  border: 1px solid #343c50; border-radius: 13px;
+  padding: 6px; background: #090d17;
+}
+.inputrow:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px #a99aff1b;
+}
+input {
+  min-width: 0; width: 100%; border: 0; outline: 0;
+  background: transparent; color: var(--text);
+  padding: 12px 8px; font-size: 14px;
+}
+input::placeholder { color: #68738b; }
+.secondary, .primary {
+  border: 0; border-radius: 10px; padding: 12px 15px;
+  font-weight: 700; white-space: nowrap;
+}
+.secondary { background: #202638; color: #dbe0f1; }
+.primary {
+  color: #100d20;
+  background: linear-gradient(110deg, #c2b7ff, #9481ff);
+}
+.primary:disabled { opacity: .5; cursor: wait; }
+.mainbtn { width: 100%; margin-top: 13px; min-height: 49px; }
+.hint { font-size: 12px; color: var(--muted); line-height: 1.6; margin: 14px 2px 0; }
+.status {
+  display: none; margin-top: 15px; padding: 13px;
+  border-radius: 11px; font-size: 13px; line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+.status.show { display: block; }
+.status.info { background: #a99aff12; border: 1px solid #a99aff30; }
+.status.error { background: #ff777710; border: 1px solid #ff777733; }
+.status.success { background: #83e2b010; border: 1px solid #83e2b033; }
+.section-title { text-align: center; font-size: 23px; letter-spacing: -.7px; margin: 12px 0 8px; }
+.section-copy { color: var(--muted); text-align: center; font-size: 13px; line-height: 1.7; }
+.features {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 13px; margin-top: 48px;
+}
+.feature {
+  padding: 20px; border: 1px solid var(--line);
+  border-radius: 16px; background: #111521a8;
+}
+.feature-icon { font-size: 22px; }
+.feature h3 { font-size: 14px; margin: 13px 0 8px; }
+.feature p { font-size: 12px; line-height: 1.7; color: var(--muted); margin: 0; }
+.notice {
+  margin: 30px auto 0; max-width: 680px;
+  border: 1px solid var(--line); border-radius: 14px;
+  padding: 16px; color: var(--muted);
+  font-size: 12px; line-height: 1.8;
+}
+footer {
+  border-top: 1px solid #ffffff10; padding: 23px 0;
+  color: #7f8aa0; font-size: 12px; text-align: center;
+}
+@media (max-width: 600px) {
+  .wrap { width: calc(100% - 28px); }
+  header { height: 66px; }
+  main { padding: 52px 0 38px; }
+  h1 { letter-spacing: -1.7px; }
+  .intro { font-size: 14px; }
+  .downloader { padding: 15px; margin-top: 27px; }
+  .inputrow { flex-wrap: wrap; }
+  .inputrow input { flex: 1 1 100%; padding: 13px 9px; }
+  .secondary { flex: 1; }
+  .features { grid-template-columns: 1fr; margin-top: 34px; }
+  .feature { display: grid; grid-template-columns: 32px 1fr; column-gap: 10px; padding: 16px; }
+  .feature-icon { grid-row: span 2; }
+  .feature h3 { margin: 2px 0 5px; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand"><div class="logo">↓</div>LinkDrop</div>
+    <span class="pill">● Free to use</span>
+  </header>
+
+  <main>
+    <div class="center">
+      <div class="eyebrow">Simple. Fast. Straightforward.</div>
+      <h1>Your video.<br><span>Your download.</span></h1>
+      <p class="intro">
+        Paste a direct video link and try downloading it in seconds.
+        No account, no clutter, just a simple tool.
+      </p>
+    </div>
+
+    <section class="downloader" aria-label="Video downloader">
+      <label class="label" for="videoUrl">Paste your video URL</label>
+      <div class="inputrow">
+        <input id="videoUrl" type="url" inputmode="url"
+          placeholder="https://example.com/video.mp4"
+          autocomplete="url" spellcheck="false">
+        <button class="secondary" id="pasteBtn" type="button">Paste link</button>
+      </div>
+      <button class="primary mainbtn" id="downloadBtn" type="button">
+        ↓ &nbsp; Download video
+      </button>
+      <div id="status" class="status" role="status" aria-live="polite"></div>
+      <p class="hint">
+        Works with some public direct-video links. Results depend on the
+        hosting server and your browser. Protected or restricted videos
+        aren't supported.
+      </p>
+    </section>
+
+    <section class="features">
+      <article class="feature">
+        <div class="feature-icon">↗</div>
+        <h3>Easy to use</h3>
+        <p>Paste a link and try the download. No account required.</p>
+      </article>
+      <article class="feature">
+        <div class="feature-icon">◇</div>
+        <h3>Privacy-minded</h3>
+        <p>This page doesn't send your URL to a LinkDrop backend.</p>
+      </article>
+      <article class="feature">
+        <div class="feature-icon">▣</div>
+        <h3>Honest results</h3>
+        <p>Unsupported links get an explanation, not a fake success message.</p>
+      </article>
+    </section>
+
+    <aside class="notice">
+      <strong>Use responsibly.</strong> Download only videos you own,
+      have permission to download, or are expressly permitted to save.
+      This prototype doesn't bypass DRM, login restrictions, or platform
+      download controls. Links are processed by your browser, and the
+      destination website may still receive your request.
+    </aside>
+  </main>
+
+  <footer>LinkDrop · A simple downloader prototype</footer>
+</div>
+
+<script>
+const input = document.getElementById("videoUrl");
+const downloadBtn = document.getElementById("downloadBtn");
+const pasteBtn = document.getElementById("pasteBtn");
+const statusBox = document.getElementById("status");
+
+function showStatus(message, type = "info") {
+  statusBox.textContent = message;
+  statusBox.className = "status show " + type;
+}
+
+function getSafeUrl(value) {
+  let url;
+  try {
+    url = new URL(value.trim());
+  } catch {
+    throw new Error("Enter a complete, valid video URL.");
+  }
+
+  if (url.protocol !== "https:") {
+    throw new Error("For safety, only HTTPS links are accepted.");
+  }
+
+  if (url.username || url.password) {
+    throw new Error("Links containing embedded login credentials aren't supported.");
+  }
+
+  const host = url.hostname.toLowerCase();
+
+  if (
+    host === "localhost" ||
+    host.endsWith(".localhost") ||
+    host.endsWith(".local") ||
+    host === "127.0.0.1" ||
+    host === "::1" ||
+    /^10\./.test(host) ||
+    /^192\.168\./.test(host) ||
+    /^169\.254\./.test(host) ||
+    /^172\.(1[6-9]|2\d|3[01])\./.test(host)
+  ) {
+    throw new Error("Private or local network addresses aren't supported.");
+  }
+
+  return url;
+}
+
+pasteBtn.addEventListener("click", async () => {
+  try {
+    if (!navigator.clipboard || !navigator.clipboard.readText) {
+      throw new Error("Clipboard access isn't available here.");
+    }
+    input.value = await navigator.clipboard.readText();
+    showStatus("Link pasted. Check it, then press Download video.", "success");
+  } catch {
+    input.focus();
+    showStatus("Clipboard access was blocked. Long-press the input and choose Paste.", "info");
+  }
+});
+
+downloadBtn.addEventListener("click", async () => {
+  let url;
+
+  try {
+    url = getSafeUrl(input.value);
+  } catch (error) {
+    showStatus(error.message, "error");
+    return;
+  }
+
+  downloadBtn.disabled = true;
+  downloadBtn.textContent = "Checking link…";
+
+  try {
+    const response = await fetch(url.href, {
+      mode: "cors",
+      credentials: "omit",
+      redirect: "error",
+      signal: AbortSignal.timeout(15000)
+    });
+
+    if (!response.ok) {
+      throw new Error("The video host returned HTTP " + response.status + ".");
+    }
+
+    const contentType = (response.headers.get("content-type") || "")
+      .split(";")[0].trim().toLowerCase();
+
+    const allowedTypes = [
+      "video/mp4",
+      "video/webm",
+      "video/ogg",
+      "video/quicktime",
+      "application/octet-stream"
+    ];
+
+    if (!allowedTypes.includes(contentType)) {
+      throw new Error("The link didn't return a recognized video or binary file.");
+    }
+
+    const length = Number(response.headers.get("content-length") || 0);
+    const maxBytes = 100 * 1024 * 1024;
+
+    if (length > maxBytes) {
+      throw new Error("This prototype limits downloads to 100 MB.");
+    }
+
+    showStatus("Downloading the file…", "info");
+
+    const blob = await response.blob();
+
+    if (blob.size > maxBytes) {
+      throw new Error("The file exceeds this prototype's 100 MB limit.");
+    }
+
+    if (!blob.size) {
+      throw new Error("The returned file is empty.");
+    }
+
+    const blobUrl = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    const extension = {
+      "video/mp4": "mp4",
+      "video/webm": "webm",
+      "video/ogg": "ogv",
+      "video/quicktime": "mov"
+    }[contentType] || "bin";
+
+    a.href = blobUrl;
+    a.download = "linkdrop-video." + extension;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+
+    setTimeout(() => URL.revokeObjectURL(blobUrl), 60000);
+    showStatus("Download requested. Check your browser's downloads.", "success");
+
+  } catch (error) {
+    const message = error.name === "TimeoutError"
+      ? "The server took too long to respond."
+      : error.name === "AbortError"
+      ? "The request was cancelled."
+      : error instanceof TypeError
+      ? "The browser couldn't access this video. The host may block cross-origin requests (CORS), or the link may be unreachable."
+      : error.message || "The download couldn't be completed.";
+
+    showStatus(
+      message + " Try a direct HTTPS video link from a host that permits browser downloads.",
+      "error"
+    );
+  } finally {
+    downloadBtn.disabled = false;
+    downloadBtn.textContent = "↓  Download video";
+  }
+});
+
+input.addEventListener("keydown", event => {
+  if (event.key === "Enter") downloadBtn.click();
+});
+</script>
+</body>
+</html>
